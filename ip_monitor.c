@@ -263,7 +263,7 @@ int main(void)
 	    ip_changed = 0;
 	  }
 	  
-	  sleep(10);/*checks once an hour*/
+	  sleep(3600);/*checks once this many seconds*/
 	  printf("\n");
 	}
 	
