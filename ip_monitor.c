@@ -64,8 +64,7 @@
 #include <unistd.h>
 #include <config.h>/*contains your private data */
 
-char myIP;
-char *myIP_ptr = &myIP ;
+char *myIP = "{\"ip\":\"000.000.000.000\"}";
 int ip_changed = 0;
 
 struct string {
@@ -122,24 +121,24 @@ int get_ip(void)
 	  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
 	  
 	  res = curl_easy_perform(curl);
-	  
-	  if(strncmp(s.ptr, myIP_ptr, 26) != 0){
-	    myIP_ptr = s.ptr;
+	  printf("s is %s\n",s);
+      printf("address of s %p\n", &s);
+	  printf("s.ptr is %s\n",s.ptr);
+	  printf("s.len is %d\n",s.len);
+	  printf("myIP is %s\n", myIP);
+	  printf("memory location %p\n", (void*)&myIP);
+	  if(strncmp(s.ptr, myIP, 24) != 0){
+	    myIP = s.ptr;
 	    ip_changed = 1;
+	    printf("IP changed\n");
 	  }
-	  /*printf("myIP %s\n", myIP);*/
-	  printf("%s\n",s);
-      printf("My pointer %s\n", s.ptr);
-      printf("length is %d\n", s.len);
-      printf("%X\n", &s);
-      /*free(s.ptr);*/
+	  printf("myIP is %s\n", myIP);
+	  printf("memory location %p\n", (void*)&myIP);
+      /*free(s.ptr);  using this seems to screw up the first few characters of myIP*/
 	  curl_global_cleanup();
-	  printf("myIP inside func %s\n", myIP_ptr);
 	}
 	return(0);	
 }
-
- 
  
 static const char *payload_text[] = {
   "Date: Mon, 29 Nov 2010 21:54:29 +1100\r\n",
@@ -168,7 +167,7 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
 {
   struct upload_status *upload_ctx = (struct upload_status *)userp;
   const char *data;
-  payload_text[7] = myIP_ptr;
+  payload_text[7] = myIP;
   if((size == 0) || (nmemb == 0) || ((size*nmemb) < 1)) {
     return 0;
   }
@@ -254,15 +253,18 @@ int main(void)
 {	
 	
 	while(1){
+	    printf("myIP in main = %s\n", myIP);
 	  get_ip();
-	    printf("myIP in main = %s\n", myIP_ptr);
+	    printf("myIP in main = %s\n", myIP);
+	  printf("memory location %p\n", (void*)&myIP);
 	  if(ip_changed){
 	  printf("ip changed %d\n", ip_changed);
 	    send_text();
 	    ip_changed = 0;
 	  }
 	  
-	  sleep(3600);/*checks once an hour*/
+	  sleep(10);/*checks once an hour*/
+	  printf("\n");
 	}
 	
 	return 0;
